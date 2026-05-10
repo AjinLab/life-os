@@ -1,0 +1,54 @@
+.page { max-width: 700px; }
+
+.headerActions { display: flex; gap: 6px; }
+
+.inlineForm {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+  background: var(--bg-secondary);
+}
+
+.section { margin-bottom: 32px; }
+
+.goalStack { display: flex; flex-direction: column; gap: 8px; }
+
+.goalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.goalLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-tertiary);
+}
+
+.goalTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.goalMeta {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  padding: 0 16px 10px;
+}
+
+.goalTasks {
+  padding: 0 16px 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+  padding-top: 8px;
+}
