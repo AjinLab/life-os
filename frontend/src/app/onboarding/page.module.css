@@ -3,211 +3,271 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 2rem;
-  /* Override main-content margin since sidebar is hidden */
+  padding: 32px 16px;
   margin-left: calc(-1 * var(--sidebar-width));
   width: calc(100% + var(--sidebar-width));
 }
 
 .container {
   width: 100%;
-  max-width: 480px;
+  max-width: 440px;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  margin-bottom: 2rem;
-  justify-content: center;
-}
-
-.logoIcon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-lg);
-  background: var(--accent-gradient);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: var(--shadow-glow);
-}
-
-.logoText {
-  font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  background: var(--accent-gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.stepIndicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 2rem;
-}
-
-.stepDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bg-tertiary);
-  border: 1.5px solid var(--border-secondary);
-  transition: all var(--transition-normal);
-}
-
-.stepDot.active {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
-}
-
-.stepLine {
-  width: 60px;
-  height: 2px;
-  background: var(--border-secondary);
-}
-
-.header {
+/* Welcome */
+.welcome {
   text-align: center;
-  margin-bottom: 1.75rem;
 }
 
-.title {
-  font-size: 1.5rem;
+.wordmark {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  margin-bottom: 32px;
+}
+
+.headline {
+  font-size: 24px;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--text-primary);
-  margin-bottom: 0.25rem;
+  line-height: 1.2;
+  margin-bottom: 8px;
 }
 
-.subtitle {
-  font-size: 0.875rem;
+.subtext {
+  font-size: 14px;
   color: var(--text-tertiary);
+  margin-bottom: 32px;
 }
 
-.goalsList {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.goalCard {
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
-}
-
-.goalLabel {
-  display: block;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.goalInput {
-  background: var(--bg-primary);
-}
-
-.continueBtn {
+.ctaBtn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.85rem;
-  font-size: 0.95rem;
+  gap: 6px;
+  padding: 14px;
+  font-size: 14px;
   font-weight: 600;
   font-family: 'Inter', sans-serif;
-  color: white;
-  background: var(--accent-gradient);
+  background: var(--text-primary);
+  color: var(--bg-primary);
   border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity 150ms ease-out;
+}
+
+.ctaBtn:hover { opacity: 0.9; }
+.ctaDisabled, .ctaBtn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.signInLink {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 16px;
+  cursor: pointer;
+}
+
+/* Step bar */
+.stepBar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 24px;
+}
+
+.stepActive, .stepDone, .stepDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.stepDot {
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+}
+
+.stepActive {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.stepDone {
+  background: var(--habits-green);
+  color: #fff;
+}
+
+.stepDivider {
+  width: 32px;
+  height: 1.5px;
+  background: var(--border);
+}
+
+.stepTitle {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.stepSub {
+  font-size: 13px;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+/* Mode grid */
+.modeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.modeCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 150ms ease-out;
+  color: var(--text-tertiary);
 }
 
-.continueBtn:hover {
-  opacity: 0.9;
-  box-shadow: var(--shadow-glow);
-  transform: translateY(-1px);
+.modeCard:hover {
+  border-color: var(--border-hover);
+  color: var(--text-secondary);
 }
 
-.continueBtn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  transform: none;
+.modeCard:last-child {
+  grid-column: 1 / -1;
 }
 
-/* Step 2 - Habits */
+.modeSelected {
+  border-color: var(--text-primary) !important;
+  background: var(--bg-tertiary);
+  color: var(--text-primary) !important;
+}
 
-.habitsList {
+.modeName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.modeDesc {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  line-height: 1.4;
+}
+
+/* Goals */
+.goalList {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.goalSlot {}
+
+.goalLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.goalLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.goalTag {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+}
+
+/* Habits */
+.habitList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .habitOption {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border-primary);
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  font-size: 0.875rem;
+  transition: all 150ms ease-out;
+  font-size: 14px;
   color: var(--text-secondary);
 }
 
 .habitOption:hover {
-  border-color: var(--border-secondary);
+  border-color: var(--border-hover);
 }
 
-.habitOption.selected {
-  border-color: var(--border-accent);
-  background: var(--accent-primary-glow);
+.habitSelected {
+  border-color: var(--habits-green-border);
+  background: var(--habits-green-bg);
   color: var(--text-primary);
 }
 
-.habitCheckbox {
+.habitToggle {
   width: 20px;
   height: 20px;
   border-radius: 5px;
-  border: 1.5px solid var(--border-secondary);
+  border: 1.5px solid var(--text-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all var(--transition-fast);
 }
 
-.selected .habitCheckbox {
-  background: var(--accent-primary);
-  border-color: var(--accent-primary);
+.habitToggleOn {
+  background: var(--habits-green);
+  border-color: var(--habits-green);
 }
 
-.addCustom {
-  margin-top: 0.25rem;
+.addCustomRow {
+  margin-top: 4px;
 }
 
-.actions {
+.habitCount {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.btnRow {
   display: flex;
-  gap: 0.75rem;
+  gap: 8px;
 }
 
-.actions .continueBtn {
+.btnRow .ctaBtn {
   flex: 1;
 }

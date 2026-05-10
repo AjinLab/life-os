@@ -1,202 +1,154 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { homeApi, tasksApi } from '@/lib/api';
+import { homeApi, tasksApi, habitsApi } from '@/lib/api';
 import { DashboardResponse } from '@/lib/types';
-import { Sparkles, ArrowRight, Inbox } from 'lucide-react';
 import Link from 'next/link';
 import styles from './page.module.css';
 
 export default function HomePage() {
-  const [dashboard, setDashboard] = useState<DashboardResponse | null>(null);
+  const [d, setD] = useState<DashboardResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboard();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  async function loadDashboard() {
+  async function load() {
     try {
       const res = await homeApi.dashboard();
-      setDashboard(res.data);
-    } catch (err) {
-      console.error('Failed to load dashboard:', err);
-    } finally {
-      setLoading(false);
-    }
+      setD(res.data);
+    } catch { /* empty */ } finally { setLoading(false); }
   }
 
-  async function toggleTask(taskId: number, currentStatus: string) {
-    const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+  async function toggleTask(taskId: number, current: string) {
     try {
-      await tasksApi.update(taskId, { status: newStatus });
-      loadDashboard();
-    } catch (err) {
-      console.error('Failed to toggle task:', err);
-    }
+      await tasksApi.update(taskId, { status: current === 'done' ? 'todo' : 'done' });
+      load();
+    } catch { /* empty */ }
+  }
+
+  async function toggleHabit(habitId: string, done: boolean) {
+    try {
+      await habitsApi.log(habitId, { completed: !done });
+      load();
+    } catch { /* empty */ }
   }
 
   if (loading) {
     return (
-      <div className={styles.container}>
-        <div className={styles.headerSkeleton}>
-          <div className="skeleton" style={{ width: 280, height: 36 }} />
-          <div className="skeleton" style={{ width: 120, height: 24, marginTop: 8 }} />
+      <div className={styles.page}>
+        <div className="skeleton" style={{ width: 260, height: 32, marginBottom: 8 }} />
+        <div className="skeleton" style={{ width: 140, height: 16, marginBottom: 24 }} />
+        <div className="metric-row">
+          {[1,2,3].map(i => <div key={i} className="metric-card"><div className="skeleton" style={{height:40}}/></div>)}
         </div>
-        <div className="metric-grid">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="skeleton" style={{ height: 90 }} />
-          ))}
-        </div>
+        <div className="skeleton" style={{ height: 60, marginBottom: 16 }} />
         <div className="skeleton" style={{ height: 200 }} />
       </div>
     );
   }
 
-  if (!dashboard) {
-    return (
-      <div className={styles.container}>
-        <div className="empty-state">
-          <div className="empty-state-icon">🏠</div>
-          <div className="empty-state-text">Could not load dashboard</div>
-        </div>
-      </div>
-    );
-  }
+  if (!d) return <div className={styles.page}><div className="empty-state"><div className="empty-state-title">Could not load dashboard</div></div></div>;
+
+  const pendingTasks = d.today_tasks.filter(t => t.status !== 'done');
+  const doneTasks = d.today_tasks.filter(t => t.status === 'done');
 
   return (
-    <div className={styles.container}>
+    <div className={styles.page}>
       {/* Header */}
       <div className={styles.header}>
         <div>
-          <h1 className={styles.greeting}>{dashboard.greeting}</h1>
-          <p className={styles.dayLabel}>{dashboard.day_label}</p>
+          <h1 className={styles.greeting}>{d.greeting}</h1>
+          <p className={styles.dateLabel}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
-        {dashboard.inbox_count > 0 && (
-          <Link href="/capture" className={styles.inboxBadge}>
-            <Inbox size={14} />
-            <span>{dashboard.inbox_count} inbox</span>
-          </Link>
-        )}
+        <span className={styles.weekChip}>{d.day_label}</span>
       </div>
 
-      {/* Metrics */}
-      <div className="metric-grid">
+      {/* Metric cards — joined, no gaps */}
+      <div className="metric-row">
         <div className="metric-card">
+          <div className="metric-value">{d.completion_pct}%</div>
           <div className="metric-label">Today</div>
-          <div className="metric-value">{dashboard.completion_pct}%</div>
-          <div className={styles.metricSub}>
-            {dashboard.tasks_completed_today}/{dashboard.tasks_total_today} tasks
-          </div>
         </div>
         <div className="metric-card">
-          <div className="metric-label">Weekly Score</div>
-          <div className="metric-value">{dashboard.weekly_score ?? '—'}</div>
-          <div className={styles.metricSub}>out of 10</div>
+          <div className="metric-value">{d.weekly_score ?? '—'}</div>
+          <div className="metric-label">Week Score</div>
         </div>
         <div className="metric-card">
+          <div className="metric-value">{d.current_streak}d</div>
           <div className="metric-label">Streak</div>
-          <div className="metric-value">{dashboard.current_streak}d</div>
-          <div className={styles.metricSub}>best: {dashboard.best_streak}d</div>
         </div>
       </div>
 
-      {/* Content Grid */}
-      <div className={styles.contentGrid}>
-        {/* Today's Priorities */}
+      {/* AI Banner */}
+      <div className="ai-banner">
+        <div className="ai-banner-label">AI · Today</div>
+        <div className="ai-banner-text">{d.ai_nudge}</div>
+        <Link href="/insights" className="ai-banner-link">See all insights →</Link>
+      </div>
+
+      {/* Today's priorities */}
+      <div className={styles.section}>
+        <div className="section-label">
+          Today
+          {pendingTasks.length > 0 && <span className="count-badge">{pendingTasks.length}</span>}
+        </div>
         <div className="card">
-          <div className="flex-between mb-sm">
-            <div className="card-title">Today&apos;s priorities</div>
-            <Link href="/plan" className="btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
-              View all <ArrowRight size={12} />
-            </Link>
-          </div>
-          {dashboard.today_tasks.length === 0 ? (
-            <div className="empty-state" style={{ padding: '1.5rem 0' }}>
-              <div className="empty-state-text">No tasks yet. Add some in Plan!</div>
+          {d.today_tasks.length === 0 ? (
+            <div className="empty-state" style={{ padding: '24px 0' }}>
+              <div className="empty-state-title">Nothing here yet.</div>
+              <div className="empty-state-text">Add your first task in Plan.</div>
             </div>
           ) : (
-            dashboard.today_tasks.slice(0, 5).map(task => (
-              <div key={task.id} className="task-item">
-                <div
-                  className={`task-checkbox ${task.status === 'done' ? 'done' : ''}`}
-                  onClick={() => toggleTask(task.id, task.status)}
-                >
-                  {task.status === 'done' && (
-                    <svg width="10" height="8" viewBox="0 0 10 8">
-                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                    </svg>
-                  )}
+            <>
+              {pendingTasks.map(task => (
+                <div key={task.id} className="task-item">
+                  <div className="task-checkbox" onClick={() => toggleTask(task.id, task.status)}>
+                  </div>
+                  <span className="task-text">{task.title}</span>
+                  {task.goal_id && <span className="task-tag">Goal</span>}
                 </div>
-                <span className={`task-text ${task.status === 'done' ? 'done' : ''}`}>
-                  {task.title}
-                </span>
-              </div>
-            ))
+              ))}
+              {doneTasks.map(task => (
+                <div key={task.id} className="task-item">
+                  <div className="task-checkbox done" onClick={() => toggleTask(task.id, task.status)}>
+                    <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>
+                  </div>
+                  <span className="task-text done">{task.title}</span>
+                </div>
+              ))}
+            </>
           )}
         </div>
+        <Link href="/plan" className="text-link" style={{ marginTop: 8, display: 'inline-block' }}>+ Add task</Link>
+      </div>
 
-        {/* Habits Today */}
-        <div className="card">
-          <div className="flex-between mb-sm">
-            <div className="card-title">Habits</div>
-            <Link href="/habits" className="btn-ghost btn-sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', color: 'var(--text-tertiary)' }}>
-              View all <ArrowRight size={12} />
-            </Link>
-          </div>
-          {dashboard.habits_today.length === 0 ? (
-            <div className="empty-state" style={{ padding: '1.5rem 0' }}>
+      {/* Habits check-in strip */}
+      <div className={styles.section}>
+        <div className="section-label">Habits today</div>
+        <div className={styles.habitStrip}>
+          {d.habits_today.length === 0 ? (
+            <div className="empty-state" style={{ padding: '16px 0' }}>
               <div className="empty-state-text">No habits tracked yet</div>
             </div>
           ) : (
-            dashboard.habits_today.map(habit => (
-              <div key={habit.id} className="habit-item">
-                <span className="habit-name">{habit.name}</span>
-                <div className={`habit-check ${habit.completed_today ? 'done' : ''}`}>
-                  {habit.completed_today && (
-                    <svg width="12" height="10" viewBox="0 0 10 8">
-                      <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                    </svg>
-                  )}
+            d.habits_today.map(h => (
+              <div
+                key={h.id}
+                className={`${styles.habitChip} ${h.completed_today ? styles.habitChipDone : ''}`}
+                onClick={() => toggleHabit(h.id, h.completed_today)}
+              >
+                <div className={`${styles.chipCircle} ${h.completed_today ? styles.chipCircleDone : ''}`}>
+                  {h.completed_today && <svg width="8" height="6" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
                 </div>
+                <span>{h.name}</span>
               </div>
             ))
           )}
-        </div>
-
-        {/* Goals */}
-        <div className="card">
-          <div className="card-title">Active Goals</div>
-          {dashboard.active_goals.length === 0 ? (
-            <div className="empty-state" style={{ padding: '1.5rem 0' }}>
-              <div className="empty-state-text">Set goals in Plan to get started</div>
-            </div>
-          ) : (
-            dashboard.active_goals.map(goal => (
-              <div key={goal.id} style={{ marginBottom: '0.75rem' }}>
-                <div className="flex-between" style={{ marginBottom: '0.25rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{goal.title}</span>
-                  <span className={`badge ${goal.progress >= 60 ? 'badge-success' : goal.progress >= 30 ? 'badge-warning' : 'badge-danger'}`}>
-                    {goal.progress}%
-                  </span>
-                </div>
-                <div className="progress-bar">
-                  <div
-                    className={`progress-fill ${goal.progress >= 60 ? 'progress-fill-success' : goal.progress >= 30 ? 'progress-fill-warning' : 'progress-fill-accent'}`}
-                    style={{ width: `${goal.progress}%` }}
-                  />
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* AI Nudge */}
-        <div className="ai-card">
-          <Sparkles size={16} className="ai-card-icon" />
-          <div className="ai-card-text">{dashboard.ai_nudge}</div>
         </div>
       </div>
+
+      {/* FAB */}
+      <Link href="/capture" className="fab">+</Link>
     </div>
   );
 }

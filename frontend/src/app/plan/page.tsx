@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { goalsApi, tasksApi } from '@/lib/api';
 import { Goal, Task } from '@/lib/types';
-import { Plus, Target, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, ChevronRight } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function PlanPage() {
@@ -12,265 +12,146 @@ export default function PlanPage() {
   const [loading, setLoading] = useState(true);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [newGoalTitle, setNewGoalTitle] = useState('');
-  const [newGoalType, setNewGoalType] = useState('semester');
-  const [newTaskTitle, setNewTaskTitle] = useState('');
-  const [newTaskGoalId, setNewTaskGoalId] = useState('');
+  const [newGoal, setNewGoal] = useState('');
+  const [newTask, setNewTask] = useState('');
+  const [newTaskGoal, setNewTaskGoal] = useState('');
   const [newTaskPriority, setNewTaskPriority] = useState('medium');
-  const [expandedGoals, setExpandedGoals] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [showCompleted, setShowCompleted] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  async function loadData() {
+  async function load() {
     try {
-      const [goalsRes, tasksRes] = await Promise.all([
-        goalsApi.list(),
-        tasksApi.list({ limit: 200 }),
-      ]);
-      setGoals(goalsRes.data);
-      setTasks(tasksRes.data.tasks);
-      // Expand all goals by default
-      setExpandedGoals(new Set(goalsRes.data.map((g: Goal) => g.id)));
-    } catch (err) {
-      console.error('Failed to load plan data:', err);
-    } finally {
-      setLoading(false);
-    }
+      const [g, t] = await Promise.all([goalsApi.list(), tasksApi.list({ limit: 500 })]);
+      setGoals(g.data);
+      setTasks(t.data.tasks);
+      setExpanded(new Set(g.data.map((gl: Goal) => gl.id)));
+    } catch {} finally { setLoading(false); }
   }
 
   async function createGoal(e: React.FormEvent) {
     e.preventDefault();
-    if (!newGoalTitle.trim()) return;
-    try {
-      await goalsApi.create({ title: newGoalTitle.trim(), type: newGoalType });
-      setNewGoalTitle('');
-      setShowGoalForm(false);
-      loadData();
-    } catch (err) {
-      console.error('Failed to create goal:', err);
-    }
+    if (!newGoal.trim()) return;
+    await goalsApi.create({ title: newGoal.trim(), type: 'semester' });
+    setNewGoal(''); setShowGoalForm(false); load();
   }
 
   async function createTask(e: React.FormEvent) {
     e.preventDefault();
-    if (!newTaskTitle.trim()) return;
-    try {
-      await tasksApi.create({
-        title: newTaskTitle.trim(),
-        goal_id: newTaskGoalId || undefined,
-        priority: newTaskPriority,
-        status: 'todo',
-      });
-      setNewTaskTitle('');
-      setShowTaskForm(false);
-      loadData();
-    } catch (err) {
-      console.error('Failed to create task:', err);
-    }
+    if (!newTask.trim()) return;
+    await tasksApi.create({ title: newTask.trim(), goal_id: newTaskGoal || undefined, priority: newTaskPriority, status: 'todo' });
+    setNewTask(''); setShowTaskForm(false); load();
   }
 
-  async function toggleTask(taskId: number, currentStatus: string) {
-    const newStatus = currentStatus === 'done' ? 'todo' : 'done';
-    try {
-      await tasksApi.update(taskId, { status: newStatus });
-      loadData();
-    } catch (err) {
-      console.error('Failed to toggle task:', err);
-    }
+  async function toggleTask(id: number, status: string) {
+    await tasksApi.update(id, { status: status === 'done' ? 'todo' : 'done' });
+    load();
   }
 
-  function toggleGoal(goalId: string) {
-    setExpandedGoals(prev => {
-      const next = new Set(prev);
-      if (next.has(goalId)) next.delete(goalId);
-      else next.add(goalId);
-      return next;
-    });
+  function toggle(id: string) {
+    setExpanded(p => { const n = new Set(p); n.has(id) ? n.delete(id) : n.add(id); return n; });
   }
 
-  function getGoalTasks(goalId: string) {
-    return tasks.filter(t => t.goal_id === goalId);
+  function statusClass(goal: Goal) {
+    if (goal.progress >= 60) return 'status-on-track';
+    if (goal.progress >= 30) return 'status-at-risk';
+    return 'status-behind';
   }
 
-  function getUnlinkedTasks() {
-    return tasks.filter(t => !t.goal_id);
+  function statusLabel(goal: Goal) {
+    if (goal.progress >= 60) return { text: 'on track', cls: 'badge-success' };
+    if (goal.progress >= 30) return { text: 'at risk', cls: 'badge-warning' };
+    return { text: 'behind', cls: 'badge-danger' };
   }
 
-  function getStatusBadge(goal: Goal) {
-    if (goal.progress >= 60) return { class: 'badge-success', text: 'on track' };
-    if (goal.progress >= 30) return { class: 'badge-warning', text: 'at risk' };
-    return { class: 'badge-danger', text: 'behind' };
-  }
+  const unlinked = tasks.filter(t => !t.goal_id);
+  const activeTasks = tasks.filter(t => t.status !== 'done');
+  const completedTasks = tasks.filter(t => t.status === 'done');
 
-  function getPriorityBadge(priority: string | null) {
-    switch (priority) {
-      case 'urgent': return 'badge-danger';
-      case 'high': return 'badge-warning';
-      case 'medium': return 'badge-info';
-      default: return '';
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className={styles.container}>
-        <div className="page-header">
-          <h1 className="page-title">Plan</h1>
-        </div>
-        {[1, 2, 3].map(i => (
-          <div key={i} className="skeleton" style={{ height: 120, marginBottom: 12 }} />
-        ))}
-      </div>
-    );
-  }
-
-  const unlinkedTasks = getUnlinkedTasks();
+  if (loading) return (
+    <div className={styles.page}>
+      <div className="section-label">Loading...</div>
+      {[1,2,3].map(i => <div key={i} className="skeleton" style={{height:100,marginBottom:8}}/>)}
+    </div>
+  );
 
   return (
-    <div className={styles.container}>
-      <div className={styles.pageHeader}>
+    <div className={styles.page}>
+      {/* Header */}
+      <div className="flex-between" style={{ marginBottom: 24 }}>
         <div>
-          <h1 className="page-title">Plan</h1>
-          <p className="page-subtitle">Goals &amp; tasks — your execution view</p>
+          <h1 style={{ fontSize: 20, fontWeight: 600 }}>Plan</h1>
         </div>
-        <div className={styles.actions}>
+        <div className={styles.headerActions}>
           <button className="btn btn-sm" onClick={() => setShowGoalForm(!showGoalForm)}>
-            <Plus size={14} /> Goal
+            <Plus size={13} /> Goal
           </button>
           <button className="btn btn-primary btn-sm" onClick={() => setShowTaskForm(!showTaskForm)}>
-            <Plus size={14} /> Task
+            <Plus size={13} /> Task
           </button>
         </div>
       </div>
 
-      {/* Goal Form */}
+      {/* Inline forms */}
       {showGoalForm && (
         <form onSubmit={createGoal} className={styles.inlineForm}>
-          <input
-            className="input"
-            placeholder="Goal title..."
-            value={newGoalTitle}
-            onChange={e => setNewGoalTitle(e.target.value)}
-            autoFocus
-          />
-          <select
-            className="input"
-            value={newGoalType}
-            onChange={e => setNewGoalType(e.target.value)}
-            style={{ maxWidth: 160 }}
-          >
-            <option value="semester">Semester</option>
-            <option value="monthly">Monthly</option>
-            <option value="weekly">Weekly</option>
-          </select>
+          <input className="input" placeholder="Goal title..." value={newGoal} onChange={e=>setNewGoal(e.target.value)} autoFocus />
           <button type="submit" className="btn btn-primary btn-sm">Create</button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowGoalForm(false)}>Cancel</button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={()=>setShowGoalForm(false)}>Cancel</button>
         </form>
       )}
-
-      {/* Task Form */}
       {showTaskForm && (
         <form onSubmit={createTask} className={styles.inlineForm}>
-          <input
-            className="input"
-            placeholder="Task title..."
-            value={newTaskTitle}
-            onChange={e => setNewTaskTitle(e.target.value)}
-            autoFocus
-          />
-          <select
-            className="input"
-            value={newTaskGoalId}
-            onChange={e => setNewTaskGoalId(e.target.value)}
-            style={{ maxWidth: 200 }}
-          >
-            <option value="">No goal (standalone)</option>
-            {goals.map(g => (
-              <option key={g.id} value={g.id}>{g.title}</option>
-            ))}
+          <input className="input" placeholder="What needs to be done?" value={newTask} onChange={e=>setNewTask(e.target.value)} autoFocus style={{flex:1}} />
+          <select className="input" value={newTaskGoal} onChange={e=>setNewTaskGoal(e.target.value)} style={{maxWidth:160}}>
+            <option value="">No goal</option>
+            {goals.map(g=><option key={g.id} value={g.id}>{g.title}</option>)}
           </select>
-          <select
-            className="input"
-            value={newTaskPriority}
-            onChange={e => setNewTaskPriority(e.target.value)}
-            style={{ maxWidth: 130 }}
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="urgent">Urgent</option>
+          <select className="input" value={newTaskPriority} onChange={e=>setNewTaskPriority(e.target.value)} style={{maxWidth:100}}>
+            <option value="low">Low</option><option value="medium">Normal</option><option value="high">High</option><option value="urgent">Urgent</option>
           </select>
-          <button type="submit" className="btn btn-primary btn-sm">Create</button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowTaskForm(false)}>Cancel</button>
+          <button type="submit" className="btn btn-primary btn-sm">Add</button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={()=>setShowTaskForm(false)}>Cancel</button>
         </form>
       )}
 
-      {/* Goals with tasks */}
-      <div className={styles.goalsList}>
-        {goals.length === 0 && unlinkedTasks.length === 0 ? (
-          <div className="card">
-            <div className="empty-state">
-              <div className="empty-state-icon">🎯</div>
-              <div className="empty-state-text">No goals yet — create your first goal to get started</div>
-            </div>
-          </div>
+      {/* Semester Goals */}
+      <div className={styles.section}>
+        <div className="section-label">
+          Semester goals <span className="count-badge">{goals.length}</span>
+        </div>
+        {goals.length === 0 ? (
+          <div className="card"><div className="empty-state"><div className="empty-state-title">No goals set.</div><div className="empty-state-text">Add your first goal above.</div></div></div>
         ) : (
-          <>
+          <div className={styles.goalStack}>
             {goals.map(goal => {
-              const goalTasks = getGoalTasks(goal.id);
-              const isExpanded = expandedGoals.has(goal.id);
-              const badge = getStatusBadge(goal);
-              const doneTasks = goalTasks.filter(t => t.status === 'done').length;
-
+              const gt = tasks.filter(t => t.goal_id === goal.id);
+              const done = gt.filter(t => t.status === 'done').length;
+              const st = statusLabel(goal);
+              const isOpen = expanded.has(goal.id);
               return (
-                <div key={goal.id} className={styles.goalCard}>
-                  <div className={styles.goalHeader} onClick={() => toggleGoal(goal.id)}>
+                <div key={goal.id} className={`goal-card ${statusClass(goal)}`}>
+                  <div className={styles.goalHeader} onClick={() => toggle(goal.id)}>
                     <div className={styles.goalLeft}>
-                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-                      <div>
-                        <div className={styles.goalTitle}>{goal.title}</div>
-                        <div className={styles.goalMeta}>
-                          <span className="chip">{goal.type}</span>
-                          <span className={styles.goalTaskCount}>{doneTasks}/{goalTasks.length} tasks</span>
-                        </div>
-                      </div>
+                      {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                      <span className={styles.goalTitle}>{goal.title}</span>
                     </div>
-                    <div className={styles.goalRight}>
-                      <span className={`badge ${badge.class}`}>{badge.text}</span>
-                    </div>
+                    <span className={`badge ${st.cls}`}>{st.text}</span>
                   </div>
-
-                  <div className="progress-bar" style={{ margin: '0 1.25rem' }}>
-                    <div
-                      className={`progress-fill ${goal.progress >= 60 ? 'progress-fill-success' : goal.progress >= 30 ? 'progress-fill-warning' : 'progress-fill-accent'}`}
-                      style={{ width: `${goal.progress}%` }}
-                    />
+                  <div className="progress-bar" style={{margin:'0 16px 8px'}}>
+                    <div className="progress-fill" style={{width:`${goal.progress}%`, background: goal.progress >= 60 ? 'var(--habits-green)' : goal.progress >= 30 ? 'var(--warning)' : 'var(--error)'}} />
                   </div>
-
-                  {isExpanded && goalTasks.length > 0 && (
+                  <div className={styles.goalMeta}>{done}/{gt.length} tasks · {goal.progress}% complete</div>
+                  {isOpen && gt.length > 0 && (
                     <div className={styles.goalTasks}>
-                      {goalTasks.map(task => (
+                      {gt.map(task => (
                         <div key={task.id} className="task-item">
-                          <div
-                            className={`task-checkbox ${task.status === 'done' ? 'done' : ''}`}
-                            onClick={() => toggleTask(task.id, task.status)}
-                          >
-                            {task.status === 'done' && (
-                              <svg width="10" height="8" viewBox="0 0 10 8">
-                                <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                              </svg>
-                            )}
+                          <div className={`task-checkbox ${task.status==='done'?'done':''}`} onClick={()=>toggleTask(task.id,task.status)}>
+                            {task.status==='done' && <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>}
                           </div>
-                          <span className={`task-text ${task.status === 'done' ? 'done' : ''}`}>
-                            {task.title}
-                          </span>
-                          {task.priority && (
-                            <span className={`badge ${getPriorityBadge(task.priority)}`}>
-                              {task.priority}
-                            </span>
-                          )}
+                          <span className={`task-text ${task.status==='done'?'done':''}`}>{task.title}</span>
+                          {task.priority && task.priority !== 'medium' && <span className={`badge ${task.priority==='urgent'?'badge-danger':task.priority==='high'?'badge-warning':'badge-info'}`}>{task.priority}</span>}
                         </div>
                       ))}
                     </div>
@@ -278,49 +159,49 @@ export default function PlanPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+        <p className="text-link" style={{marginTop:8}} onClick={()=>setShowGoalForm(true)}>+ Add goal</p>
+      </div>
 
-            {/* Unlinked tasks */}
-            {unlinkedTasks.length > 0 && (
-              <div className={styles.goalCard}>
-                <div className={styles.goalHeader}>
-                  <div className={styles.goalLeft}>
-                    <Target size={16} style={{ opacity: 0.4 }} />
-                    <div>
-                      <div className={styles.goalTitle} style={{ opacity: 0.6 }}>Standalone Tasks</div>
-                      <div className={styles.goalMeta}>
-                        <span className={styles.goalTaskCount}>{unlinkedTasks.length} tasks</span>
-                      </div>
-                    </div>
-                  </div>
+      {/* This week's tasks */}
+      <div className={styles.section}>
+        <div className="section-label">
+          This week <span className="count-badge">{activeTasks.length}</span>
+        </div>
+        <div className="card">
+          {activeTasks.length === 0 && completedTasks.length === 0 ? (
+            <div className="empty-state" style={{padding:'24px 0'}}><div className="empty-state-title">Nothing planned yet.</div><div className="empty-state-text">Add your first task.</div></div>
+          ) : (
+            <>
+              {activeTasks.map(task => (
+                <div key={task.id} className="task-item">
+                  <div className="task-checkbox" onClick={()=>toggleTask(task.id,task.status)} />
+                  <span className="task-text">{task.title}</span>
+                  {task.goal_id && <span className="task-tag" style={{color:'var(--goals-blue)',borderColor:'var(--goals-blue-border)'}}>
+                    {goals.find(g=>g.id===task.goal_id)?.title?.slice(0,15) || 'Goal'}
+                  </span>}
                 </div>
-                <div className={styles.goalTasks}>
-                  {unlinkedTasks.map(task => (
+              ))}
+              {completedTasks.length > 0 && (
+                <>
+                  <p className="text-link" style={{padding:'8px 0'}} onClick={()=>setShowCompleted(!showCompleted)}>
+                    {showCompleted ? 'Hide' : 'Show'} completed ({completedTasks.length})
+                  </p>
+                  {showCompleted && completedTasks.map(task => (
                     <div key={task.id} className="task-item">
-                      <div
-                        className={`task-checkbox ${task.status === 'done' ? 'done' : ''}`}
-                        onClick={() => toggleTask(task.id, task.status)}
-                      >
-                        {task.status === 'done' && (
-                          <svg width="10" height="8" viewBox="0 0 10 8">
-                            <path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                          </svg>
-                        )}
+                      <div className="task-checkbox done" onClick={()=>toggleTask(task.id,task.status)}>
+                        <svg width="10" height="8" viewBox="0 0 10 8"><path d="M1 4l3 3 5-6" stroke="#fff" strokeWidth="1.5" fill="none" strokeLinecap="round"/></svg>
                       </div>
-                      <span className={`task-text ${task.status === 'done' ? 'done' : ''}`}>
-                        {task.title}
-                      </span>
-                      {task.priority && (
-                        <span className={`badge ${getPriorityBadge(task.priority)}`}>
-                          {task.priority}
-                        </span>
-                      )}
+                      <span className="task-text done">{task.title}</span>
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
+                </>
+              )}
+            </>
+          )}
+        </div>
+        <p className="text-link" style={{marginTop:8}} onClick={()=>setShowTaskForm(true)}>+ Add task</p>
       </div>
     </div>
   );
