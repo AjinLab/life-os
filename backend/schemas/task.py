@@ -1,32 +1,50 @@
-from pydantic import BaseModel, ConfigDict
 from datetime import datetime
-from typing import Optional
-from backend.models.task import TaskStatus, TaskPriority, TaskSource
+from typing import Optional, List
+from pydantic import BaseModel, ConfigDict
+from enum import Enum
 
-class TaskCreate(BaseModel):
+class TaskStatus(str, Enum):
+    inbox = "inbox"
+    todo = "todo"
+    in_progress = "in_progress"
+    done = "done"
+    cancelled = "cancelled"
+
+class TaskPriority(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    urgent = "urgent"
+
+class TaskSource(str, Enum):
+    manual = "manual"
+    capture = "capture"
+    ai_suggested = "ai_suggested"
+
+class TaskBase(BaseModel):
     title: str
-    goal_id: Optional[int] = None
-    status: TaskStatus = TaskStatus.inbox
+    status: Optional[TaskStatus] = TaskStatus.inbox
     priority: Optional[TaskPriority] = None
     due_date: Optional[datetime] = None
-    source: TaskSource = TaskSource.manual
+    source: Optional[TaskSource] = TaskSource.manual
+    goal_id: Optional[str] = None
+
+class TaskCreate(TaskBase):
+    pass
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
-    goal_id: Optional[int] = None
     status: Optional[TaskStatus] = None
     priority: Optional[TaskPriority] = None
     due_date: Optional[datetime] = None
+    source: Optional[TaskSource] = None
+    goal_id: Optional[str] = None
 
-class TaskResponse(BaseModel):
+class TaskResponse(TaskBase):
     id: int
-    user_id: Optional[int] = None
-    goal_id: Optional[int] = None
-    title: str
-    status: TaskStatus
-    priority: Optional[TaskPriority] = None
-    due_date: Optional[datetime] = None
-    source: TaskSource
     created_at: datetime
-
     model_config = ConfigDict(from_attributes=True)
+
+class TaskListResponse(BaseModel):
+    tasks: List[TaskResponse]
+    total: int

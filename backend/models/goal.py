@@ -2,6 +2,7 @@ import enum
 import uuid
 from datetime import datetime, timezone
 from sqlalchemy import Column, String, Enum, DateTime, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 from backend.database import Base  # <-- Notice backend.
 
 class GoalType(str, enum.Enum):
@@ -25,3 +26,6 @@ class Goal(Base):
     progress = Column(Integer, default=0)
     due_date = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+    # Relationship with Tasks
+    tasks = relationship("Task", back_populates="goal", cascade="all, delete-orphan")

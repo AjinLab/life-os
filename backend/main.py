@@ -1,17 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.database import engine, Base  # <-- Notice backend.
-from backend.models.user import User
-from backend.models.capture import Capture
-from backend.models.goal import Goal
+from backend.database import engine, Base
 from backend.routers.capture import router as capture_router
 from backend.routers.plan import router as plan_router, task_router
+from backend.routers.habits import router as habits_router
+from backend.routers.reflection import router as reflection_router
+from backend.routers.home import router as home_router
+from backend.routers.ai_coach import router as ai_router
 
-# Create all tables
+# Import all models so they're registered with Base
+import backend.models  # noqa: F401
+
+# Create tables
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Life OS", version="0.1.0")
+app = FastAPI(title="Life OS", version="1.0.0")
 
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,14 +25,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register Routers
 app.include_router(capture_router)
 app.include_router(plan_router)
 app.include_router(task_router)
+app.include_router(habits_router)
+app.include_router(reflection_router)
+app.include_router(home_router)
+app.include_router(ai_router)
+
 
 @app.get("/")
-async def root():
-    return {"app": "Life OS", "status": "running", "version": "0.1.0"}
+def root():
+    return {"message": "Life OS is running"}
+
 
 @app.get("/health")
-async def health():
+def health():
     return {"status": "ok"}

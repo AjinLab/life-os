@@ -1,0 +1,97 @@
+.container {
+  max-width: 800px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.inlineForm {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  background: var(--bg-card);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.inlineForm .input {
+  flex: 1;
+  min-width: 150px;
+}
+
+.goalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.goalCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-fast);
+}
+
+.goalCard:hover {
+  border-color: var(--border-secondary);
+}
+
+.goalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.goalLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  color: var(--text-tertiary);
+}
+
+.goalTitle {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.15rem;
+}
+
+.goalMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.goalTaskCount {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+}
+
+.goalRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.goalTasks {
+  padding: 0 1.25rem 1rem;
+  border-top: 1px solid var(--border-primary);
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}

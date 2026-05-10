@@ -1,0 +1,213 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  /* Override main-content margin since sidebar is hidden */
+  margin-left: calc(-1 * var(--sidebar-width));
+  width: calc(100% + var(--sidebar-width));
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.logoIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+
+.logoText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2rem;
+}
+
+.stepDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--border-secondary);
+  transition: all var(--transition-normal);
+}
+
+.stepDot.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+
+.stepLine {
+  width: 60px;
+  height: 2px;
+  background: var(--border-secondary);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-tertiary);
+}
+
+.goalsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.goalCard {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+}
+
+.goalLabel {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.goalInput {
+  background: var(--bg-primary);
+}
+
+.continueBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: white;
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.continueBtn:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.continueBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Step 2 - Habits */
+
+.habitsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.habitOption {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.habitOption:hover {
+  border-color: var(--border-secondary);
+}
+
+.habitOption.selected {
+  border-color: var(--border-accent);
+  background: var(--accent-primary-glow);
+  color: var(--text-primary);
+}
+
+.habitCheckbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1.5px solid var(--border-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.selected .habitCheckbox {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.addCustom {
+  margin-top: 0.25rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.actions .continueBtn {
+  flex: 1;
+}

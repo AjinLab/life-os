@@ -1,0 +1,69 @@
+.container {
+  max-width: 900px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.headerSkeleton {
+  margin-bottom: 2rem;
+}
+
+.greeting {
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.dayLabel {
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+.inboxBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--warning);
+  background: var(--warning-bg);
+  border: 1px solid var(--warning-border);
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.inboxBadge:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.metricSub {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  margin-top: 0.15rem;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.contentGrid > :nth-child(3),
+.contentGrid > :nth-child(4) {
+  /* Goals and AI card span or stay in grid */
+}
+
+@media (max-width: 768px) {
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,108 @@
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 0.75rem;
+  z-index: 50;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.logoIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+
+.logoText {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  position: relative;
+  text-decoration: none;
+}
+
+.navItem:hover {
+  color: var(--text-secondary);
+  background: var(--bg-tertiary);
+}
+
+.navItem.active {
+  color: var(--text-primary);
+  background: var(--accent-primary-glow);
+}
+
+.activeIndicator {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 18px;
+  background: var(--accent-gradient);
+  border-radius: 0 2px 2px 0;
+}
+
+.footer {
+  padding: 0 0.75rem;
+}
+
+.aiChip {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent-secondary);
+  background: var(--accent-primary-glow);
+  border: 1px solid var(--border-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.aiChip:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
